@@ -7,6 +7,7 @@ const PERFIS = ['CLIENTE', 'ATENDENTE', 'COZINHA', 'GERENTE'];
 const CANAIS_PEDIDO = ['APP', 'TOTEM', 'BALCAO', 'PICKUP', 'WEB'];
 const STATUS_PEDIDO = ['AGUARDANDO_PAGAMENTO', 'EM_PREPARO', 'PRONTO', 'ENTREGUE', 'CANCELADO'];
 const TIPOS_MOVIMENTO = ['ENTRADA', 'SAIDA'];
+const STATUS_PAGAMENTO = ['APROVADO', 'RECUSADO'];
 const FORMAS_PAGAMENTO = ['DINHEIRO', 'PIX', 'CARTAO', 'CARTAO_RECUSADO'];
 
 // Transições de status permitidas e quem pode executar cada uma (RN05)

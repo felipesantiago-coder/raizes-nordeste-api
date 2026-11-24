@@ -18,6 +18,8 @@ app.get('/status', (req, res) => {
 });
 
 // Rotas por recurso (montadas conforme o desenvolvimento avança)
+app.use('/auth', require('./api/routes/auth'));
+app.use('/usuarios', require('./api/routes/usuarios'));
 
 // Rota inexistente → 404 no padrão
 app.use((req, res, next) => {
