@@ -20,19 +20,22 @@ async function main() {
     data: { nome: 'Caruaru — Centro', cidade: 'Caruaru', ativa: true }
   });
 
-  // --- Produtos ---
-  const produtos = await Promise.all([
-    prisma.produto.create({ data: { nome: 'Tapioca de carne seca', descricao: 'Tapioca recheada com carne seca e queijo coalho', precoUnitario: 18.9, categoria: 'Tapiocas' } }),
-    prisma.produto.create({ data: { nome: 'Cuscuz recheado', descricao: 'Cuscuz de milho recheado com queijo e ovo', precoUnitario: 16.5, categoria: 'Cuscuz' } }),
-    prisma.produto.create({ data: { nome: 'Bolo de macaxeira', descricao: 'Fatia de bolo de macaxeira com coco', precoUnitario: 9.9, categoria: 'Doces' } }),
-    prisma.produto.create({ data: { nome: 'Suco de cajá', descricao: 'Suco natural 500ml', precoUnitario: 8.5, categoria: 'Bebidas' } }),
-    prisma.produto.create({ data: { nome: 'Café passado', descricao: 'Café na hora 300ml', precoUnitario: 4.5, categoria: 'Bebidas' } }),
-    prisma.produto.create({ data: { nome: 'Pão na chapa com manteiga de garrafa', precoUnitario: 7.9, categoria: 'Lanches' } }),
-    prisma.produto.create({ data: { nome: 'Queijo coalho na brasa', descricao: 'Espetinho de queijo coalho', precoUnitario: 12.9, categoria: 'Lanches' } }),
-    prisma.produto.create({ data: { nome: 'Vitamina de manga', descricao: 'Vitamina com leite 400ml', precoUnitario: 9.5, categoria: 'Bebidas' } }),
-    prisma.produto.create({ data: { nome: 'Beiju de coco', precoUnitario: 6.9, categoria: 'Tapiocas' } }),
-    prisma.produto.create({ data: { nome: 'Caldo de carne com macaxeira', precoUnitario: 14.0, categoria: 'Caldos' } })
-  ]);
+  // --- Produtos (criação sequencial para ter ids previsíveis 1..10 nos testes) ---
+  const produtos = [];
+  for (const p of [
+    { nome: 'Tapioca de carne seca', descricao: 'Tapioca recheada com carne seca e queijo coalho', precoUnitario: 18.9, categoria: 'Tapiocas' },
+    { nome: 'Cuscuz recheado', descricao: 'Cuscuz de milho recheado com queijo e ovo', precoUnitario: 16.5, categoria: 'Cuscuz' },
+    { nome: 'Bolo de macaxeira', descricao: 'Fatia de bolo de macaxeira com coco', precoUnitario: 9.9, categoria: 'Doces' },
+    { nome: 'Suco de cajá', descricao: 'Suco natural 500ml', precoUnitario: 8.5, categoria: 'Bebidas' },
+    { nome: 'Café passado', descricao: 'Café na hora 300ml', precoUnitario: 4.5, categoria: 'Bebidas' },
+    { nome: 'Pão na chapa com manteiga de garrafa', precoUnitario: 7.9, categoria: 'Lanches' },
+    { nome: 'Queijo coalho na brasa', descricao: 'Espetinho de queijo coalho', precoUnitario: 12.9, categoria: 'Lanches' },
+    { nome: 'Vitamina de manga', descricao: 'Vitamina com leite 400ml', precoUnitario: 9.5, categoria: 'Bebidas' },
+    { nome: 'Beiju de coco', precoUnitario: 6.9, categoria: 'Tapiocas' },
+    { nome: 'Caldo de carne com macaxeira', precoUnitario: 14.0, categoria: 'Caldos' }
+  ]) {
+    produtos.push(await prisma.produto.create({ data: p }));
+  }
 
   // --- Estoque por unidade ---
   // Matriz: estoque completo. Centro: estoque médio. Caruaru: reduzido e com
