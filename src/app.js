@@ -1,12 +1,22 @@
 require('dotenv').config();
 
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const yaml = require('yaml');
 const handlerErro = require('./api/middlewares/erro');
 const { erroNaoEncontrado } = require('./domain/erros');
 
 const app = express();
 
 app.use(express.json());
+
+// Documentação OpenAPI/Swagger gerada a partir do contrato real
+const documentoOpenapi = yaml.parse(
+  fs.readFileSync(path.join(__dirname, '..', 'docs', 'openapi.yaml'), 'utf8')
+);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(documentoOpenapi));
 
 // Healthcheck simples
 app.get('/status', (req, res) => {
