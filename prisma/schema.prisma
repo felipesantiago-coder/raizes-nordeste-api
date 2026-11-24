@@ -1,0 +1,165 @@
+// Modelo de dados da API Raízes do Nordeste.
+// SQLite não suporta ENUM no Prisma, então os campos que no DER aparecem como
+// enumeração ficam como String e são validados na camada de domínio
+// (ver src/domain/validacoes.js).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Acesso ao sistema e base da conformidade LGPD
+model Usuario {
+  id                Int       @id @default(autoincrement())
+  nome              String
+  email             String    @unique
+  senhaHash         String
+  perfil            String // CLIENTE | ATENDENTE | COZINHA | GERENTE
+  dataConsentimento DateTime? // preenchido quando o cliente aceita o programa de fidelidade
+  versaoTermo       String?
+  criadoEm          DateTime  @default(now())
+
+  pedidos        Pedido[]
+  lancamentos    LancamentoFidelidade[]
+  contasFidelidade ContaFidelidade[]
+  movimentos     MovimentoEstoque[]
+  logs           LogAuditoria[]
+}
+
+// Unidades da rede — cada uma com cardápio e estoque próprios
+model Unidade {
+  id     Int    @id @default(autoincrement())
+  nome   String @unique
+  cidade String
+  ativa  Boolean @default(true)
+
+  estoques Estoque[]
+  pedidos  Pedido[]
+  movimentos MovimentoEstoque[]
+}
+
+// Itens do cardápio da rede
+model Produto {
+  id            Int     @id @default(autoincrement())
+  nome          String
+  descricao     String?
+  precoUnitario Float
+  categoria     String
+  disponivel    Boolean @default(true)
+  criadoEm      DateTime @default(now())
+
+  estoques Estoque[]
+  itens    ItemPedido[]
+  movimentos MovimentoEstoque[]
+}
+
+// Saldo por unidade e produto (chave composta)
+model Estoque {
+  unidadeId  Int
+  produtoId  Int
+  quantidade Int
+  minimo     Int @default(0)
+
+  unidade Unidade @relation(fields: [unidadeId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id])
+
+  @@id([unidadeId, produtoId])
+}
+
+// Rastreabilidade das movimentações de estoque
+model MovimentoEstoque {
+  id         Int      @id @default(autoincrement())
+  unidadeId  Int
+  produtoId  Int
+  tipo       String // ENTRADA | SAIDA
+  quantidade Int
+  dataHora   DateTime @default(now())
+  usuarioId  Int
+
+  unidade Unidade @relation(fields: [unidadeId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id])
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+// Núcleo do fluxo crítico — registra o canal de origem (multicanalidade)
+model Pedido {
+  id           Int      @id @default(autoincrement())
+  unidadeId    Int
+  clienteId    Int? // opcional: pedidos de balcão podem ser sem cliente cadastrado
+  canalPedido  String // APP | TOTEM | BALCAO | PICKUP | WEB — obrigatório na criação
+  status       String   @default("AGUARDANDO_PAGAMENTO") // AGUARDANDO_PAGAMENTO | EM_PREPARO | PRONTO | ENTREGUE | CANCELADO
+  total        Float
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  unidade     Unidade  @relation(fields: [unidadeId], references: [id])
+  cliente     Usuario? @relation(fields: [clienteId], references: [id])
+  itens       ItemPedido[]
+  pagamentos  Pagamento[]
+  lancamentos LancamentoFidelidade[]
+}
+
+// Itens com preço congelado no momento do pedido
+model ItemPedido {
+  id            Int     @id @default(autoincrement())
+  pedidoId      Int
+  produtoId     Int
+  quantidade    Int
+  precoUnitario Float
+
+  pedido  Pedido  @relation(fields: [pedidoId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id])
+}
+
+// Pagamento desacoplado, simulado e registrado
+model Pagamento {
+  id                Int      @id @default(autoincrement())
+  pedidoId          Int
+  provedor          String   @default("MOCK")
+  formaPagamento    String
+  status            String // APROVADO | RECUSADO
+  mensagem          String
+  codigoAutorizacao String?
+  dataHora          DateTime @default(now())
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+}
+
+// Saldo de pontos do cliente
+model ContaFidelidade {
+  clienteId   Int     @id
+  saldoPontos Int     @default(0)
+
+  cliente Usuario @relation(fields: [clienteId], references: [id])
+}
+
+// Histórico de acúmulo e resgate
+model LancamentoFidelidade {
+  id        Int      @id @default(autoincrement())
+  clienteId Int
+  pedidoId  Int?
+  tipo      String // ACUMULO | RESGATE
+  pontos    Int
+  descricao String
+  dataHora  DateTime @default(now())
+
+  cliente Usuario  @relation(fields: [clienteId], references: [id])
+  pedido  Pedido?  @relation(fields: [pedidoId], references: [id])
+}
+
+// Auditoria de ações sensíveis (pedidos, status, estoque, acesso a dados pessoais)
+model LogAuditoria {
+  id         Int      @id @default(autoincrement())
+  usuarioId  Int?
+  acao       String
+  entidade   String
+  entidadeId Int?
+  detalhe    String?
+  dataHora   DateTime @default(now())
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id])
+}
