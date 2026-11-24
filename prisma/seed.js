@@ -81,8 +81,16 @@ async function main() {
     data: { nome: 'João sem Consentimento', email: 'cliente2@raizes.com', senhaHash, perfil: 'CLIENTE' }
   });
 
-  // Contas de fidelidade zeradas para quem consentiu
-  await prisma.contaFidelidade.create({ data: { clienteId: cliente.id, saldoPontos: 0 } });
+  // Conta de fidelidade com saldo de campanhas anteriores (para testar resgates)
+  await prisma.contaFidelidade.create({ data: { clienteId: cliente.id, saldoPontos: 350 } });
+  await prisma.lancamentoFidelidade.create({
+    data: {
+      clienteId: cliente.id,
+      tipo: 'ACUMULO',
+      pontos: 350,
+      descricao: 'Saldo inicial da campanha junina'
+    }
+  });
 
   console.log('Seed concluído:');
   console.log(`  Unidades: ${matriz.id}, ${centro.id}, ${caruaru.id}`);

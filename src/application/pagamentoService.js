@@ -3,6 +3,7 @@
 const prisma = require('../infrastructure/prisma');
 const gatewayMock = require('../infrastructure/pagamento-mock');
 const logService = require('./logService');
+const fidelidadeService = require('./fidelidadeService');
 const { erroNaoEncontrado, erroConflito } = require('../domain/erros');
 const {
   campoObrigatorio,
@@ -41,7 +42,7 @@ async function solicitar(dados, usuario) {
 
   const novoStatus = resultado.aprovado ? 'EM_PREPARO' : 'AGUARDANDO_PAGAMENTO';
 
-  const pagamento = await prisma.$transaction(async (tx) => {
+  const { registro: pagamento, fidelidade } = await prisma.$transaction(async (tx) => {
     const registro = await tx.pagamento.create({
       data: {
         pedidoId,
@@ -52,11 +53,15 @@ async function solicitar(dados, usuario) {
       }
     });
 
+    let fidelidade = { pontosAcumulados: 0, motivo: null };
+
     if (resultado.aprovado) {
       await tx.pedido.update({ where: { id: pedidoId }, data: { status: 'EM_PREPARO' } });
+      // Fidelidade na mesma transação: acumula só com consentimento (RN08)
+      fidelidade = await fidelidadeService.acumularNoPedido(tx, pedido);
     }
 
-    return registro;
+    return { registro, fidelidade };
   });
 
   await logService.registrar({
@@ -82,7 +87,8 @@ async function solicitar(dados, usuario) {
       pedidoId,
       status: novoStatus,
       total: pedido.total
-    }
+    },
+    fidelidade
   };
 }
 
