@@ -22,6 +22,7 @@ app.use('/auth', require('./api/routes/auth'));
 app.use('/usuarios', require('./api/routes/usuarios'));
 app.use('/unidades', require('./api/routes/unidades'));
 app.use('/produtos', require('./api/routes/produtos'));
+app.use('/estoque', require('./api/routes/estoque'));
 
 // Rota inexistente → 404 no padrão
 app.use((req, res, next) => {
