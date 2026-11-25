@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Raízes do Nordeste — Pedidos</title>
+  <meta name="description" content="Sistema de pedidos multicanal da rede de lanchonetes Raízes do Nordeste: cardápio por unidade, fidelidade e acompanhamento de pedidos.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫓</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- ===== Barra de navegação ===== -->
+  <header class="topbar">
+    <div class="topbar-conteudo">
+      <a class="marca" href="#/inicio">
+        <span class="marca-logo">🫓</span>
+        <span class="marca-texto">Raízes <em>do Nordeste</em></span>
+      </a>
+
+      <nav class="nav" id="nav-principal" aria-label="Navegação principal">
+        <a href="#/inicio" data-rota="inicio">Início</a>
+        <a href="#/cardapio" data-rota="cardapio">Cardápio</a>
+        <a href="#/pedidos" data-rota="pedidos">Pedidos</a>
+        <a href="#/fidelidade" data-rota="fidelidade">Fidelidade</a>
+        <a href="#/painel" data-rota="painel" id="nav-painel" class="oculto">Painel</a>
+      </nav>
+
+      <div class="topbar-acoes">
+        <button class="btn-icone" id="btn-carrinho" aria-label="Abrir carrinho">
+          🛒<span class="bolha oculto" id="carrinho-bolha">0</span>
+        </button>
+        <button class="btn btn-primario" id="btn-usuario">Entrar</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app">
+
+    <!-- ===== Início ===== -->
+    <section class="visao" id="visao-inicio">
+      <div class="hero">
+        <div class="hero-texto">
+          <span class="etiqueta">Projeto Multidisciplinar · Trilha Back-end</span>
+          <h1>O sabor do Nordeste,<br>em qualquer canal.</h1>
+          <p>
+            Pedidos pelo app, totem, balcão, retirada ou web — o mesmo cardápio,
+            o mesmo estoque e o mesmo programa de fidelidade em todas as unidades.
+          </p>
+          <div class="hero-acoes">
+            <a class="btn btn-primario btn-grande" href="#/cardapio">Ver cardápio</a>
+            <a class="btn btn-fantasma btn-grande" href="#/fidelidade">Programa de fidelidade</a>
+          </div>
+        </div>
+        <div class="hero-arte" aria-hidden="true">🌮<br>🧋<br>🥘</div>
+      </div>
+
+      <h2 class="titulo-secao">Nossas unidades</h2>
+      <div class="grade grade-unidades" id="grade-unidades">
+        <div class="skeleton" style="height:120px"></div>
+        <div class="skeleton" style="height:120px"></div>
+        <div class="skeleton" style="height:120px"></div>
+      </div>
+
+      <h2 class="titulo-secao">Como funciona</h2>
+      <ol class="passos">
+        <li><strong>Escolha a unidade</strong><span>o cardápio mostra o saldo real de cada loja.</span></li>
+        <li><strong>Monte o pedido</strong><span>no canal que preferir: app, totem, balcão, pickup ou web.</span></li>
+        <li><strong>Pague e acompanhe</strong><span>pagamento simulado, status em tempo real: preparo → pronto → entregue.</span></li>
+      </ol>
+    </section>
+
+    <!-- ===== Cardápio ===== -->
+    <section class="visao oculto" id="visao-cardapio">
+      <div class="cabecalho-visao">
+        <h1>Cardápio</h1>
+        <p class="subtitulo">Escolha a unidade — os saldos mostrados são o estoque real de cada loja.</p>
+      </div>
+
+      <div class="linha-filtros">
+        <div class="chips" id="filtro-unidades" aria-label="Unidade"></div>
+        <div class="chips" id="filtro-categorias" aria-label="Categoria"></div>
+      </div>
+
+      <div class="grade grade-produtos" id="grade-produtos"></div>
+    </section>
+
+    <!-- ===== Pedidos ===== -->
+    <section class="visao oculto" id="visao-pedidos">
+      <div class="cabecalho-visao">
+        <h1>Pedidos</h1>
+        <p class="subtitulo" id="pedidos-subtitulo">Acompanhe o status dos seus pedidos.</p>
+      </div>
+
+      <div class="linha-filtros oculto" id="pedidos-filtros">
+        <select class="campo-select" id="filtro-canal" aria-label="Filtrar por canal">
+          <option value="">Todos os canais</option>
+          <option value="APP">App</option>
+          <option value="TOTEM">Totem</option>
+          <option value="BALCAO">Balcão</option>
+          <option value="PICKUP">Pickup</option>
+          <option value="WEB">Web</option>
+        </select>
+        <select class="campo-select" id="filtro-status" aria-label="Filtrar por status">
+          <option value="">Todos os status</option>
+          <option value="AGUARDANDO_PAGAMENTO">Aguardando pagamento</option>
+          <option value="EM_PREPARO">Em preparo</option>
+          <option value="PRONTO">Pronto</option>
+          <option value="ENTREGUE">Entregue</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="lista-pedidos" id="lista-pedidos"></div>
+    </section>
+
+    <!-- ===== Fidelidade ===== -->
+    <section class="visao oculto" id="visao-fidelidade">
+      <div class="cabecalho-visao">
+        <h1>Fidelidade</h1>
+        <p class="subtitulo">1 ponto a cada R$ 10 em pagamentos aprovados · 100 pontos = R$ 10 de desconto.</p>
+      </div>
+      <div id="fidelidade-conteudo"></div>
+    </section>
+
+    <!-- ===== Painel interno ===== -->
+    <section class="visao oculto" id="visao-painel">
+      <div class="cabecalho-visao">
+        <h1>Painel interno</h1>
+        <p class="subtitulo" id="painel-subtitulo">Operação da unidade: estoque, produtos e auditoria.</p>
+      </div>
+
+      <div class="abas" id="painel-abas">
+        <button class="aba ativa" data-aba="estoque">Estoque</button>
+        <button class="aba" data-aba="produtos">Produtos</button>
+        <button class="aba" data-aba="auditoria">Auditoria</button>
+      </div>
+
+      <div id="painel-conteudo"></div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>
+      <strong>Raízes do Nordeste</strong> — API + interface do Projeto Multidisciplinar (trilha Back-end).
+      <a href="/api-docs" target="_blank" rel="noopener">Documentação da API (Swagger)</a>
+    </p>
+  </footer>
+
+  <!-- ===== Carrinho (gaveta lateral) ===== -->
+  <div class="fundo-gaveta oculto" id="fundo-gaveta"></div>
+  <aside class="gaveta oculto" id="gaveta-carrinho" aria-label="Carrinho">
+    <div class="gaveta-cabecalho">
+      <h2>Seu pedido</h2>
+      <button class="btn-icone" id="btn-fechar-carrinho" aria-label="Fechar carrinho">✕</button>
+    </div>
+    <div class="gaveta-corpo" id="carrinho-conteudo"></div>
+  </aside>
+
+  <!-- ===== Modal de autenticação ===== -->
+  <div class="modal-fundo oculto" id="modal-auth">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-auth">
+      <button class="btn-icone modal-fechar" id="btn-fechar-auth" aria-label="Fechar">✕</button>
+      <div class="abas abas-compactas">
+        <button class="aba ativa" data-aba-auth="entrar">Entrar</button>
+        <button class="aba" data-aba-auth="criar">Criar conta</button>
+      </div>
+
+      <form id="form-login" class="form-auth">
+        <h2 id="titulo-auth">Bem-vindo de volta!</h2>
+        <div class="campo">
+          <label for="login-email">E-mail</label>
+          <input type="email" id="login-email" required autocomplete="email" placeholder="voce@email.com">
+        </div>
+        <div class="campo">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" required autocomplete="current-password" placeholder="Sua senha">
+        </div>
+        <button type="submit" class="btn btn-primario btn-bloco">Entrar</button>
+
+        <div class="contas-demo">
+          <p>Contas de demonstração (senha <code>Senha@123</code>):</p>
+          <div class="chips">
+            <button type="button" class="chip chip-demo" data-email="cliente@raizes.com">cliente</button>
+            <button type="button" class="chip chip-demo" data-email="atendente@raizes.com">atendente</button>
+            <button type="button" class="chip chip-demo" data-email="cozinha@raizes.com">cozinha</button>
+            <button type="button" class="chip chip-demo" data-email="gerente@raizes.com">gerente</button>
+          </div>
+        </div>
+      </form>
+
+      <form id="form-cadastro" class="form-auth oculto">
+        <h2>Criar conta de cliente</h2>
+        <div class="campo">
+          <label for="cad-nome">Nome</label>
+          <input type="text" id="cad-nome" required autocomplete="name" placeholder="Seu nome">
+        </div>
+        <div class="campo">
+          <label for="cad-email">E-mail</label>
+          <input type="email" id="cad-email" required autocomplete="email" placeholder="voce@email.com">
+        </div>
+        <div class="campo">
+          <label for="cad-senha">Senha</label>
+          <input type="password" id="cad-senha" required minlength="8" autocomplete="new-password" placeholder="Mínimo de 8 caracteres">
+        </div>
+        <label class="campo-check">
+          <input type="checkbox" id="cad-fidelidade" checked>
+          <span>Quero participar do programa de fidelidade <small>(1 ponto a cada R$ 10 — precisamos do seu consentimento para registrar os pontos; você pode cancelar quando quiser)</small></span>
+        </label>
+        <button type="submit" class="btn btn-primario btn-bloco">Criar conta</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Modal de pagamento ===== -->
+  <div class="modal-fundo oculto" id="modal-pagamento">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-pagamento">
+      <button class="btn-icone modal-fechar" id="btn-fechar-pagamento" aria-label="Fechar">✕</button>
+      <div id="pagamento-conteudo"></div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
