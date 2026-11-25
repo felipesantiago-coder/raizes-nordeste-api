@@ -16,6 +16,7 @@ Projeto da disciplina **Projeto Multidisciplinar (trilha Back-end)**, desenvolvi
 
 ## Funcionalidades
 
+- **Interface web integrada** — página única servida pela própria API para usar o sistema de ponta a ponta: cardápio por unidade, carrinho, pedido em cinco canais, pagamento simulado, acompanhamento de status, fidelidade e painel interno (estoque, produtos e auditoria)
 - **Autenticação JWT com perfis** — CLIENTE, ATENDENTE, COZINHA e GERENTE, autorização declarada rota a rota
 - **Cadastro público de cliente** com registro de consentimento LGPD (data + versão do termo)
 - **Cardápio por unidade** com saldo disponível em estoque
@@ -51,6 +52,19 @@ npm start
 ```
 
 A API sobe em **http://localhost:3000** (healthcheck: `GET /status`).
+
+### Interface web
+
+A página do sistema é servida pela própria API na mesma origem: **http://localhost:3000**
+
+- **Cardápio** — escolha a unidade e veja os itens com o saldo real de estoque de cada loja
+- **Carrinho** — monte o pedido, escolha o canal (App, Totem, Balcão, Pickup, Web) e finalize
+- **Pagamento simulado** — Pix, cartão ou dinheiro; a opção "Cartão (teste de recusa)" demonstra o cenário de falha
+- **Pedidos** — acompanhe o status (em preparo → pronto → entregue), cancele ou pague o que estiver pendente
+- **Fidelidade** — saldo de pontos, extrato e resgate (100 pontos = R$ 10)
+- **Painel interno** — perfis da equipe veem estoque com movimentação; o gerente administra produtos e consulta a auditoria
+
+Use as contas de demonstração listadas abaixo (botões de atalho na própria tela de login).
 
 ### Documentação (Swagger)
 
@@ -95,8 +109,25 @@ Resultado esperado: **29 requisições / 39 assertions / 0 falhas**. No Postman/
 | Pagamentos | `POST /pagamentos` · `GET /pagamentos/{id}` | CLIENTE/ATENDENTE · envolvidos |
 | Fidelidade | `GET /fidelidade/saldo` · `GET /fidelidade/lancamentos` · `POST /fidelidade/resgates` | CLIENTE |
 | Auditoria | `GET /logs?entidade=&entidadeId=` | GERENTE |
+| Interface | `GET /` (página única do sistema) | pública |
 
 Todas as listagens são paginadas (`?page=1&limit=10`, máximo 100). O contrato completo, com exemplos e códigos de status, está no Swagger.
+
+## Deploy na Vercel (gratuito)
+
+O projeto está pronto para deploy sem nenhuma configuração manual de banco ou variáveis de ambiente:
+
+1. Acesse [vercel.com/new](https://vercel.com/new) e importe este repositório (conta gratuita, Hobby plan);
+2. Confirme as opções detectadas — o `vercel.json` cuida do resto;
+3. Clique em **Deploy**.
+
+O que acontece no deploy:
+
+- O build aplica as migrations e roda o seed, criando o SQLite dentro do ambiente;
+- A API, a interface web e o Swagger são servidos pelo mesmo endereço (a função serverless em `api/index.js` reusa `src/app.js`);
+- O `JWT_SECRET` tem um valor padrão de demonstração — em produção, defina a variável no painel da Vercel (Settings → Environment Variables);
+- **Limitação da demonstração:** no plano serverless, cada novo container recomeça com os dados do seed (pedidos e movimentos feitos durante a sessão são voláteis). Para uso real, troque o SQLite por um banco gerenciado (ex.: Neon/Supabase PostgreSQL — há planos gratuitos) ajustando o `provider` no `schema.prisma`.
+
 
 ## Regras de negócio essenciais
 
@@ -120,6 +151,8 @@ src/
 docs/                          # requisitos, casos de uso, DER, classes, arquitetura, LGPD, OpenAPI
 prisma/                        # schema, migrations e seed
 postman/                       # coleção de testes (T01–T24)
+public/                        # interface web (HTML, CSS e JS servidos pela API)
+api/                           # entrada serverless para o deploy na Vercel
 ```
 
 Detalhes em `docs/arquitetura.md`.

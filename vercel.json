@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "export DATABASE_URL=\"file:./dev.db\" && npx prisma migrate deploy && node prisma/seed.js && npx prisma generate",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "{docs/openapi.yaml,public/**,prisma/dev.db}"
+    }
+  },
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/api/index?caminho=$1" }]
+}

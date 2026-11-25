@@ -1,5 +1,9 @@
 require('dotenv').config();
 
+// Segredo JWT com valor padrão para execução sem .env (ex.: deploy na Vercel).
+// Em produção, defina JWT_SECRET nas variáveis de ambiente da plataforma.
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'raizes-nordeste-demo-troque-em-producao';
+
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
@@ -11,6 +15,9 @@ const { erroNaoEncontrado } = require('./domain/erros');
 const app = express();
 
 app.use(express.json());
+
+// Interface web (mesma origem da API — funciona local e na Vercel)
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Documentação OpenAPI/Swagger gerada a partir do contrato real
 const documentoOpenapi = yaml.parse(
